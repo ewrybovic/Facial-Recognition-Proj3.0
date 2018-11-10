@@ -1,0 +1,92 @@
+
+<!DOCTYPE html>
+<html>
+	<head>
+        <meta charset="UTF-8">
+		<title>Find My Face</title>
+        
+        
+        <script>
+            function addFavorite() {
+                var website = document.getElementById("website").value;
+
+                var table = document.getElementById("myFavorites");
+                var addRow = table.insertRow(1);
+                var cell1 = addRow.insertCell(0);
+                cell1.innerHTML = website;
+            }
+        </script>
+        
+	</head>
+    
+    <style type="text/css">
+        h2
+        {
+            font-size:56px;
+            font-family:Arial, sans-serif;
+            text-align: center;
+        }
+    
+    table {
+        border-collapse: collapse;
+        width: 75%;
+    }
+    
+   table, th, td {
+        border: 1px solid black;
+    }
+    
+    th {
+        height: 50px;
+    }
+    
+    </style>
+    
+	<body>
+        
+        <a href="{{url_for('index') }}">Been here before?</a>
+        
+        <br>
+        
+        <!-- print the 5 images of unknown user-->
+        <h2>
+            <img src="/static/images/picture1.jpg" width="200" height="200" >
+            <img src="/static/images/picture2.jpg" width="200" height="200">
+            <img src="/static/images/picture3.jpg" width="200" height="200">
+            <img src="/static/images/picture4.jpg" width="200" height="200">
+            <img src="/static/images/picture5.jpg" width="200" height="200">
+                
+        </h2>
+        
+        
+        
+        <h2>What's your name?</h2>
+        <form>
+            <label for="fname">First Name</label><br>
+            <input type="text" id="fname" name="firstname" placeholder="Your first name..."> <br><br>
+                
+            <label for="lname">Last Name</label><br>
+            <input type="text" id="lname" name="lastname" placeholder="Your last name...">
+        </form> <br></br>
+        
+        <p>What websites do you like? </p>
+        <table id="myFavorites">
+            <tr>
+                <th>Favorites</th>
+            </tr>
+        </table>
+        <br>
+        
+        <input type="text" name="website" id="website"> <br>
+        <button onclick="addFavorite()">Add to System</button>
+        
+        
+<!--        <form action="/signup" method="post">
+            <input type="text" name="website"> </input>
+            <input type="submit" value="Update"> </input>
+        </form> -->
+
+
+
+	</body>
+</html>

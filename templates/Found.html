@@ -1,0 +1,82 @@
+
+<!DOCTYPE html>
+<html>
+	<head>
+        <meta charset="UTF-8">
+		<title>Find My Face</title>
+        
+        <!-- script for adding input to the 'favorites' table -->
+        <script>
+            function addFavorite() {
+                var website = document.getElementById("website").value;
+
+                var table = document.getElementById("myFavorites");
+                var addRow = table.insertRow(1);
+                var cell1 = addRow.insertCell(0);
+                cell1.innerHTML = website;
+            }
+        </script>
+        
+	</head>
+    
+    <!-- CSS code for editing style (e.g. creating table, fonts) -->
+    <style type="text/css">
+        h2
+        {
+            font-size:56px;
+            font-family:Arial, sans-serif;
+            text-align: center-left;
+        }
+    
+    table {
+        border-collapse: collapse;
+        width: 75%;
+    }
+    
+   table, th, td {
+        border: 1px solid black;
+    }
+    
+    th {
+        height: 50px;
+    }
+    
+    </style>
+    
+    <!-- Start of body: 
+         1) 'mistake' button
+         2) photo and greeting
+         3) 'favorites' table
+         4) input to add new websites -->
+     
+	<body>
+        <!-- Link back to homepage if match was a mistake -->
+        <a href="{{url_for('not_found') }}">Is this not you?</a>
+        <br>
+        
+        
+        <!-- photo is taken from static folder in same directory as templates
+             (switch kanye_west.jpg with the name of image that will be used if found) -->
+        <h2><img src="/static/images/picture1.jpg" width="200" height="200"> Hello! </h2>
+        
+        
+        <!-- hard coded "favorites" table -->
+        <table id="myFavorites">
+            <tr>
+                <th>Favorites</th>
+            </tr>
+            <tr>
+                <td>Facebook.com</td>
+            </tr>
+            <tr>
+                <td>Youtube.com</td>
+            </tr>
+        </table>
+        <br>
+        
+        
+        <input type="text" name="website" id="website"> <br>
+        <button onclick="addFavorite()">Update</button>
+	</body>
+    
+</html>

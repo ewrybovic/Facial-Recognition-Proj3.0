@@ -85,9 +85,21 @@ def find_identity(frame, x1, y1, x2, y2, model):
 app = Flask(__name__)
 
 # The starting index of our webpage
-@app.route('/')
+@app.route('/', methods=['GET'])
 def index():
 	return render_template('index.html', message = "Video Streaming Demonstration")
+
+# If the user clicks the results button we check if there is a name in the text file
+# then redirect
+@app.route('/', methods=['POST'])
+def results_page():
+	file = open("name.txt", "r")
+	name = file.read()
+	if name == "none":
+		return not_found()
+	else:
+		return found()
+
 
 # Function for getting the frame from webcam using opencv
 def get_frame():
@@ -124,6 +136,9 @@ def get_frame():
 	FRmodel = faceRecoModel(input_shape=(3, image_size, image_size))
 	FRmodel.compile(optimizer='adam', loss=triplet_loss, metrics=['accuracy'])
 	load_weights_from_FaceNet(FRmodel)
+
+	#make the default identity to be none on starup
+	save_identity("none")
 
 	# Make the video catpture
 	camera=cv2.VideoCapture(0)
@@ -181,21 +196,21 @@ def get_frame():
 				if timeFoundFace >= timeForNextStep:
 					if finishedProcessing:
 						identity = find_identity(im, x1, y1, x2, y2, FRmodel)
+						did_take_pic = True
 						if identity is not None:
-							text = "You are: " + identity.upper()
+							save_identity(identity)
 						else:
-							text = "Can't find you"
+							save_identity("none")
+
+						del(camera)
 					else:
 						text =  "Processing"
 						save_Picture(im[y1+2:y2-2, x1+2:x2-2])
-						did_take_pic = True
 						finishedProcessing = True
-						del(camera)
 				else:
 					time_left = int(timeForNextStep - timeFoundFace)
 					if time_left == 0:
 						text = "Taking Pic"
-						did_take_pic =True
 					else:
 						if too_close:
 							text = "Move back please"
@@ -233,6 +248,17 @@ def calc():
 	# get a response for the img in the index.html
 	# get_frame will constantly return a string of values
 	 return Response(get_frame(),mimetype='multipart/x-mixed-replace; boundary=frame')
+
+def contact():
+	if "response_page" in request.form:
+		print("Button pressed")
+		return render_template("Found.html")
+	else:
+		index()
+
+def save_identity(identity):
+	file = open("name.txt", "w+")
+	file.write(identity)
 
 @app.route('/found')
 def found():

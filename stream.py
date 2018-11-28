@@ -7,6 +7,7 @@ import datetime
 import time
 import os
 import glob
+import json
 import tensorflow as tf
 from fr_utils import *
 from inception_blocks_v2 import *
@@ -21,6 +22,11 @@ wait_time = 5
 image_padding = 30
 image_x = 640
 image_y = 480
+
+current_directory = os.getcwd()
+final_directory = os.path.join(current_directory, r'static')
+if not os.path.exists(final_directory):
+    os.makedirs(final_directory)
 
 # Face classifier from OpenCV
 face_cascade = cv2.CascadeClassifier("haarcascade_frontalface_default.xml")
@@ -262,15 +268,47 @@ def save_identity(identity):
 
 @app.route('/found')
 def found():
-	return render_template('Found.html')
+    file = open("name.txt", "r")
+    name = file.read()
+    with open('users.json') as data:
+        json_Data = json.load(data)
+    return render_template('Found.html', data=json_Data, name=name)
 
 @app.route('/not_found')
 def not_found():
 	return render_template('Not_Found.html')
 
+@app.route('/updated', methods = ['POST'])
+def updated():
+    file = open("name.txt", "r")
+    name = file.read()
+    if name == "none":
+        firstName = request.form['firstname']
+        lastName = request.form['lastname']
+        favorites = request.form['favorites']
+        new_user = {
+            "name": firstName + ' ' + lastName,
+            "fName": firstName,
+            "lName": lastName,
+            "favorites": [favorites]
+        }
+        with open('users.json') as data:
+            json_Data = json.load(data)
+            json_Data.append(new_user)
+    else:
+        new_Favorite = request.form['favorites']
+        with open('users.json') as data:
+            json_Data = json.load(data)
+            for i in json_Data:
+                if i["fName"] == name:
+                    i["favorites"].append(new_Favorite)
+    with open('users.json', 'w') as outFile:
+        json.dump(json_Data, outFile)
+    return render_template('Found.html', data=json_Data, name=name)
+
 def save_Picture(image):
 	filename = "test.jpg"
-	cv2.imwrite(filename=filename, img=image)
+	cv2.imwrite(os.path.join(final_directory , filename), img=image)
 
 if __name__ == '__main__':
 	app.run(host='localhost', debug=True, threaded=True)

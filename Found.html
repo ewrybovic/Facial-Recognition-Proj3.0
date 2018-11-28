@@ -1,0 +1,119 @@
+
+<!DOCTYPE html>
+<html>
+	<head>
+        <meta charset="UTF-8">
+		<title>Find My Face</title>
+        <style>
+            body {
+                background-color: #304568
+            }
+        
+            table {
+                border-collapse: collapse;
+                width: 50%;
+                margin: auto;
+                background-color: #e2e2e2
+            }
+        
+            table, th, td {
+                border: 1px solid black;
+                text-align: center;
+                padding: 15px;
+            }
+        
+            th {
+                height: 50px;
+                font-size: 30px;
+                font-weight: bold;
+            }
+        
+            h2 {
+                font-size:56px;
+                font-family:Arial, sans-serif;
+                text-align: center;
+            }
+        
+            div.update_button {
+                text-align: center;
+            }
+        </style>
+	</head>
+    
+    
+    
+    
+    <!-- Start of body: 
+         1) 'mistake' button
+         2) photo and greeting
+         3) 'favorites' table
+         4) input to add new websites -->
+     
+	<body>
+        <!-- Link "Not Found" page if match was a mistake -->
+        <form action="http://localhost:5000/not_found">
+            <input type="submit" value="Is this not you?" />
+        </form>
+        
+        <!-- photo is taken from static folder in same directory as templates -->
+        <!-- uses "picture1.jpg" but after should move images into sub-folder of images -->
+        <h2><img src="/static/test.jpg" width="200" height="200"></h2>
+        <h2><p id = "display_name"></p></h2>
+
+        <!-- prints the JS dynamic table in HTML -->
+        <div id ="showData"></div>
+        
+        <div class="update_button">
+            <form action="{{ url_for('updated') }}" method="post">
+                <input type = "text" id="favorites" name="favorites" placeholder="Add Website..."/>
+                <input type = "submit" value ="Update" />
+            </form>
+        </div>
+        
+    </body>
+    
+    
+    <script>
+        // convert data to json and access element from json object
+        // loop through each key to find a match to given "name"
+        var jsonData = {{ data|tojson|safe }};
+        var userIndex = 0;
+        for(var i = 0; i < jsonData.length; i++) {
+            for(key in jsonData[i]) {
+                if(jsonData[i][key].indexOf( "{{name}}" ) != -1) {
+                    userIndex = i;
+                }
+            }
+        }
+        document.getElementById("display_name").innerHTML = "Hello " + jsonData[userIndex].fName + "!";
+        
+        
+        function createFavoritesTable() {
+            var users = jsonData;
+            
+            // CREATE DYNAMIC TABLE.
+            var table = document.createElement("table");
+                           
+            // CREATE HTML TABLE HEADER ROW
+            var tr = table.insertRow(-1);                   // INSERT TABLE ROW.
+            
+            var th = document.createElement("th");
+            th.innerHTML = "Favorite Websites";
+            tr.appendChild(th);
+            
+            // ADD JSON DATA TO TABLE
+            for(var i = 0; i < users[0].favorites.length; i++) {
+                tr = table.insertRow(-1);
+                var tabCell = tr.insertCell(-1);
+                tabCell.innerHTML = users[0].favorites[i];
+            }
+            
+            // ADD THE NEWLY CREATED TABLE WITH JSON DATA TO A CONTAINER.
+            var divContainer = document.getElementById("showData");
+            divContainer.innerHTML = "";
+            divContainer.appendChild(table);
+        }
+        createFavoritesTable();
+        
+    </script>
+</html>

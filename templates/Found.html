@@ -79,7 +79,8 @@
         var jsonData = {{ data|tojson|safe }};
         var userIndex = 0;
         for(var i = 0; i < jsonData.length; i++) {
-            if(jsonData[i].fName == " {{ name }} ") {
+            userIndex = 1
+            if(jsonData[i].fName == '{{ name|safe }}') {
 		    userIndex = i;
 		    break;
 	    }
@@ -88,7 +89,7 @@
         
         
         function createFavoritesTable() {
-            var users = jsonData;
+            var users = jsonData[userIndex];
             
             // CREATE DYNAMIC TABLE.
             var table = document.createElement("table");
@@ -101,10 +102,10 @@
             tr.appendChild(th);
             
             // ADD JSON DATA TO TABLE
-            for(var i = 0; i < users[0].favorites.length; i++) {
+            for(var i = 0; i < users.favorites.length; i++) {
                 tr = table.insertRow(-1);
                 var tabCell = tr.insertCell(-1);
-                tabCell.innerHTML = users[0].favorites[i];
+                tabCell.innerHTML = users.favorites[i];
             }
             
             // ADD THE NEWLY CREATED TABLE WITH JSON DATA TO A CONTAINER.

@@ -292,6 +292,7 @@ def updated():
             "lName": lastName,
             "favorites": [favorites]
         }
+	name = firstName
         with open('users.json') as data:
             json_Data = json.load(data)
             json_Data.append(new_user)

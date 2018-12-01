@@ -8,6 +8,7 @@ import time
 import os
 import glob
 import json
+from shutil import copyfile
 import tensorflow as tf
 from fr_utils import *
 from inception_blocks_v2 import *
@@ -292,10 +293,16 @@ def updated():
             "lName": lastName,
             "favorites": [favorites]
         }
-	name = firstName
+        name = firstName
         with open('users.json') as data:
             json_Data = json.load(data)
             json_Data.append(new_user)
+
+        # Move the test.jpg to the image folder and rename it to the firstName
+        currentDirectory = os.path.join(final_directory , 'test.jpg')
+        newDirectory = os.path.join(final_directory, r'images/' + name + '.jpg')
+        copyfile(currentDirectory, newDirectory)
+
     else:
         new_Favorite = request.form['favorites']
         with open('users.json') as data:

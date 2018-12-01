@@ -79,11 +79,10 @@
         var jsonData = {{ data|tojson|safe }};
         var userIndex = 0;
         for(var i = 0; i < jsonData.length; i++) {
-            for(key in jsonData[i]) {
-                if(jsonData[i][key].indexOf( "{{name}}" ) != -1) {
-                    userIndex = i;
-                }
-            }
+            if(jsonData[i].fName == " {{ name }} ") {
+		    userIndex = i;
+		    break;
+	    }
         }
         document.getElementById("display_name").innerHTML = "Hello " + jsonData[userIndex].fName + "!";
         

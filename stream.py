@@ -6,6 +6,7 @@ import numpy
 import datetime
 import time
 import os
+import gc
 import glob
 import json
 from shutil import copyfile
@@ -139,6 +140,7 @@ def get_frame():
 	yield(b'--frame\r\n'b'Content-Type: text/plain\r\n\r\n'+loading_frame+b'\r\n')
 
 	# Compile the FaceNet model
+	K.clear_session()
 	K.set_image_data_format("channels_first")
 	FRmodel = faceRecoModel(input_shape=(3, image_size, image_size))
 	FRmodel.compile(optimizer='adam', loss=triplet_loss, metrics=['accuracy'])
@@ -209,7 +211,9 @@ def get_frame():
 						else:
 							save_identity("none")
 
-						del(camera)
+						camera = None
+						FRmodel = None
+						gc.collect()
 					else:
 						text =  "Processing"
 						save_Picture(im[y1+2:y2-2, x1+2:x2-2])

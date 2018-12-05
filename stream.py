@@ -6,7 +6,10 @@ import numpy
 import datetime
 import time
 import os
+import gc
 import glob
+import json
+from shutil import copyfile
 import tensorflow as tf
 from fr_utils import *
 from inception_blocks_v2 import *
@@ -21,6 +24,11 @@ wait_time = 5
 image_padding = 30
 image_x = 640
 image_y = 480
+
+current_directory = os.getcwd()
+final_directory = os.path.join(current_directory, r'static')
+if not os.path.exists(final_directory):
+    os.makedirs(final_directory)
 
 # Face classifier from OpenCV
 face_cascade = cv2.CascadeClassifier("haarcascade_frontalface_default.xml")
@@ -63,7 +71,7 @@ def who_is_it(image, model):
 	identity = None
 
 	for (name, enc) in prepare_database(model).items():
-		dist = np.linalg.norm(enc - encoding)
+		dist = 1
 		print("Distance for %s is %s" %(name, dist))
 
 		#THIS DECIDES IF WE KNOW A FACE ORE NOT
@@ -132,6 +140,7 @@ def get_frame():
 	yield(b'--frame\r\n'b'Content-Type: text/plain\r\n\r\n'+loading_frame+b'\r\n')
 
 	# Compile the FaceNet model
+	K.clear_session()
 	K.set_image_data_format("channels_first")
 	FRmodel = faceRecoModel(input_shape=(3, image_size, image_size))
 	FRmodel.compile(optimizer='adam', loss=triplet_loss, metrics=['accuracy'])
@@ -202,7 +211,9 @@ def get_frame():
 						else:
 							save_identity("none")
 
-						del(camera)
+						camera = None
+						FRmodel = None
+						gc.collect()
 					else:
 						text =  "Processing"
 						save_Picture(im[y1+2:y2-2, x1+2:x2-2])
@@ -262,15 +273,64 @@ def save_identity(identity):
 
 @app.route('/found')
 def found():
-	return render_template('Found.html')
+    file = open("name.txt", "r")
+    name = file.read()
+    with open('users.json') as data:
+        json_Data = json.load(data)
+    return render_template('Found.html', data=json_Data, name=name)
 
 @app.route('/not_found')
 def not_found():
 	return render_template('Not_Found.html')
 
+@app.route('/updated', methods = ['POST'])
+def updated():
+    file = open("name.txt", "r")
+    name = file.read()
+    
+    # if name is none, will get submit forms from 'not_found' page,
+    # create a new_user element with the given information, and
+    # append the new user to the end of the JSON file
+    if name == "none":
+        firstName = request.form['firstname']
+        lastName = request.form['lastname']
+        favorites = request.form['favorites']
+        new_user = {
+            "name": firstName + ' ' + lastName,
+            "fName": firstName,
+            "lName": lastName,
+            "favorites": [favorites]
+        }
+        # replaces the 'none' inside 'name.txt' with the users first name
+        name = name.replace("none", firstName)
+        with open("name.txt", "w") as file:
+            file.write(name)
+        with open('users.json') as data:
+            json_Data = json.load(data)
+            json_Data.append(new_user)
+
+        # Move the test.jpg to the image folder and rename it to the firstName
+        currentDirectory = os.path.join(final_directory , 'test.jpg')
+        newDirectory = os.path.join(final_directory, r'images/' + name + '.jpg')
+        copyfile(currentDirectory, newDirectory)
+
+    # the model has identified the user and 'name.txt' has a name inside.
+    # will append the added favorite website to the user's data
+    else:
+        new_Favorite = request.form['favorites']
+        with open('users.json') as data:
+            json_Data = json.load(data)
+            for i in json_Data:
+                if i["fName"] == name:
+                    i["favorites"].append(new_Favorite)
+    # writes out the JSON file with the added user/favorite
+    with open('users.json', 'w') as outFile:
+        json.dump(json_Data, outFile)
+    return render_template('Found.html', data=json_Data, name=name)
+
 def save_Picture(image):
 	filename = "test.jpg"
-	cv2.imwrite(filename=filename, img=image)
+	cv2.imwrite(os.path.join(final_directory , filename), img=image)
 
 if __name__ == '__main__':
 	app.run(host='localhost', debug=True, threaded=True)

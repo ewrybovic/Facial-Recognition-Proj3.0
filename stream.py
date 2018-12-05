@@ -287,6 +287,10 @@ def not_found():
 def updated():
     file = open("name.txt", "r")
     name = file.read()
+    
+    # if name is none, will get submit forms from 'not_found' page,
+    # create a new_user element with the given information, and
+    # append the new user to the end of the JSON file
     if name == "none":
         firstName = request.form['firstname']
         lastName = request.form['lastname']
@@ -297,7 +301,10 @@ def updated():
             "lName": lastName,
             "favorites": [favorites]
         }
-        name = firstName
+        # replaces the 'none' inside 'name.txt' with the users first name
+        name = name.replace("none", firstName)
+        with open("name.txt", "w") as file:
+            file.write(name)
         with open('users.json') as data:
             json_Data = json.load(data)
             json_Data.append(new_user)
@@ -307,6 +314,8 @@ def updated():
         newDirectory = os.path.join(final_directory, r'images/' + name + '.jpg')
         copyfile(currentDirectory, newDirectory)
 
+    # the model has identified the user and 'name.txt' has a name inside.
+    # will append the added favorite website to the user's data
     else:
         new_Favorite = request.form['favorites']
         with open('users.json') as data:
@@ -314,6 +323,7 @@ def updated():
             for i in json_Data:
                 if i["fName"] == name:
                     i["favorites"].append(new_Favorite)
+    # writes out the JSON file with the added user/favorite
     with open('users.json', 'w') as outFile:
         json.dump(json_Data, outFile)
     return render_template('Found.html', data=json_Data, name=name)
